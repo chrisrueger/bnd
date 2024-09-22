@@ -492,7 +492,7 @@ public class Workspace extends Processor {
 		projects.forceRefresh();
 	}
 
-	final static Set<String> INCLUDE_EXTS = Set.of("bnd", "mf", "pmvn", "pobr");
+	final static Set<String> INCLUDE_EXTS = Set.of("bnd", "mf", "pmvn", "pobr", "pxml");
 
 	@Override
 	public void propertiesChanged() {

@@ -49,6 +49,7 @@ public class MagicBnd {
 		return switch (ext) {
 			case "pmvn" -> convertMaven(workspace, file);
 			case "pobr" -> convertOBR(workspace, file);
+			case "pxml" -> convertBndPom(workspace, file);
 			default -> Result.ok(null);
 		};
 	}
@@ -91,6 +92,27 @@ public class MagicBnd {
 				int event = reader.next();
 				if (event == XMLStreamConstants.START_ELEMENT) {
 					return reader.getAttributeValue(null, "name");
+				}
+			}
+		} catch (Exception e1) {
+			// ignore
+		}
+		return defaultName;
+	}
+
+	private static String getPomName(File file, String defaultName) throws FactoryConfigurationError {
+		XMLInputFactory factory = XMLInputFactory.newInstance();
+		try (InputStream inputStream = new FileInputStream(file);) {
+			XMLStreamReader reader = factory.createXMLStreamReader(inputStream);
+
+			while (reader.hasNext()) {
+				int event = reader.next();
+				if (event == XMLStreamConstants.START_ELEMENT) {
+					if (reader.getLocalName()
+						.equals("name")) {
+						String name = reader.getElementText();
+						return name;
+					}
 				}
 			}
 		} catch (Exception e1) {
@@ -162,6 +184,80 @@ public class MagicBnd {
 			.append(snapshot.stream()
 				.collect(Collectors.joining()))
 			.append("'");
+
+		Properties p = new Properties();
+		p.put("-plugin.ext." + file.getName(), sb.toString());
+		return Result.ok(p);
+	}
+
+	/*
+	 * Convert a something pom.pxml file to BndPomRepository
+	 */
+	private static Result<Properties> convertBndPom(Workspace workspace, File file) {
+		StringBuilder sb = new StringBuilder();
+		String parts[] = Strings.extension(file.getName());
+
+		String name = getPomName(file, file.getName());
+
+		Map<String, String> attrs = new LinkedHashMap<>();
+		attrs.put("name", name);
+		attrs.put("pom", file.toURI()
+			.toString());
+
+		List<String> release = new ArrayList<>();
+		List<String> snapshot = new ArrayList<>();
+
+		try (BufferedReader br = IO.reader(file)) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				Optional<Match> matches = REPO_ATTR_P.matches(line);
+				if (matches.isPresent()) {
+					Match m = matches.get();
+					String key = m.presentGroup("key");
+					String value = m.presentGroup("value");
+					switch (key) {
+						case "releaseUrl", "releaseUrls" -> release.add(value);
+						case "snapshotUrl", "snapshotUrls" -> snapshot.add(value);
+
+						default -> {
+							attrs.put(key, value);
+						}
+					}
+				} else
+					break;
+			}
+		} catch (Exception e) {
+			return Result.err("reading file %s to convert to bnd properties failed: %s", file, e.getMessage());
+		}
+
+		sb.append("aQute.bnd.repository.maven.pom.provider.BndPomRepository");
+
+		for (Map.Entry<String, String> e : attrs.entrySet()) {
+			sb.append(";")
+				.append(e.getKey())
+				.append("='")
+				.append(e.getValue())
+				.append("'");
+		}
+
+		if (release.isEmpty())
+			release.add("https://repo.maven.apache.org/maven2/");
+		sb.append(";releaseUrl='")
+			.append(release.stream()
+				.collect(Collectors.joining()))
+			.append("'");
+
+		if (!snapshot.isEmpty())
+			sb.append(";snapshotUrl=")
+				.append(snapshot.stream()
+				.collect(Collectors.joining()))
+			.append("'");
+
+		if (attrs.containsKey("dependencyManagement")) {
+			sb.append(";dependencyManagement=")
+				.append(attrs.get("dependencyManagement"))
+				.append("'");
+		}
 
 		Properties p = new Properties();
 		p.put("-plugin.ext." + file.getName(), sb.toString());
