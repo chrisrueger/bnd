@@ -113,6 +113,7 @@ org.osgi:org.osgi.test.common:${osgi-test.version}
 org.osgi:org.osgi.test.junit5:${osgi-test.version}
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
+org.eclipse.platform:org.eclipse.osgi:3.22.0
 
 
 args4j:args4j:2.0.26
