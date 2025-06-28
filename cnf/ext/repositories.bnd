@@ -29,10 +29,10 @@ ossrh:                  https://oss.sonatype.org/content/repositories/snapshots
 
 
 # Eclipse Release repository
-#-plugin.1.Eclipse:\
-#	aQute.bnd.repository.p2.provider.P2Repository; \
-#	 	url = https://download.eclipse.org/releases/2024-12/; \
-#	 	name = "Eclipse_4_34-2024-12"       
+-plugin.1.Eclipse:\
+	aQute.bnd.repository.p2.provider.P2Repository; \
+	 	url = https://download.eclipse.org/releases/2025-03/; \
+	 	name = "Eclipse_4_35-2025-03"       
 
 # How to update to a different Eclipse Version?
 # ---------------------------------------------

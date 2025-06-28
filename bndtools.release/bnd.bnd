@@ -49,6 +49,7 @@ Import-Package: \
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.forms,\
 	org.eclipse.ui.editors,\
+	org.eclipse.ui.views,\
 	org.eclipse.ui.workbench,\
 	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.debug.core,\

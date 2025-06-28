@@ -119,7 +119,7 @@ Export-Package: org.osgi.service.metatype.annotations
 	org.eclipse.jgit,\
 	org.eclipse.egit.core,\
 	org.eclipse.jdt.core.compiler.batch;version='3.40',\
-	org.eclipse.rap.ui.views
+	org.eclipse.ui.views
 
 -testpath: \
 	slf4j.api,\
