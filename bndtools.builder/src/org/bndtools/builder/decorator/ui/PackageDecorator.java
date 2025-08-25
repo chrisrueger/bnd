@@ -2,12 +2,14 @@ package org.bndtools.builder.decorator.ui;
 
 import java.io.File;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -145,6 +147,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 							.containsFQN(pkgName)) {
 							if (!excluded.equals(text)) {
 								pkgResource.setPersistentProperty(packageDecoratorKey, excluded);
+								createMarker(project, pkgResource, pkgName);
 								changed = true;
 							}
 							continue;
@@ -168,5 +171,14 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 				.getDecoratorManager()
 				.update(packageDecoratorId));
 		}
+	}
+
+	private static void createMarker(IProject project, IResource pkgResource, String pkgName) throws CoreException {
+		IMarker marker = pkgResource.createMarker(BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+		marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+		marker.setAttribute(IMarker.MESSAGE, "Non-empty, non-contained package: " + pkgName
+			+ " (Add package to -privatepackage or Export-Package in bnd.bnd)");
+		marker.setAttribute(IMarker.LOCATION, project.getName());
+		marker.setAttribute(IMarker.SOURCE_ID, BndtoolsConstants.CORE_PLUGIN_ID);
 	}
 }
